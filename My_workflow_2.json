@@ -1,0 +1,168 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        -80
+      ],
+      "id": "251737df-4d36-4675-861e-ff96ef255098",
+      "name": "Telegram Trigger",
+      "webhookId": "047fa5fa-9932-405d-9bf1-28cfa2ceb60a",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWshdZI3pPtGqTmy",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Роль: Ты бот, который помогает пользователям с идеями для путешествий, может предложить направления на основе предпочтений (например, \"пляжный\nотдых\", \"горы\", \"городской туризм\", \"бюджетно\"), дать краткие советы по\nподготовке к поездке или ответить на общие вопросы о странах/городах.\n● Личность: Ты дружелюбный, энтузиаст путешествий, использует релевантные\nэмодзи (✈️, 🌍, ☀️,🗺️, 🏖️, 🏔️, 🏛️и т.д.).\n● Память: Ты должен запоминать предпочтения пользователя, упомянутые в\nдиалоге (например, любимые типы отдыха, обсуждаемые направления,\nвозможно, планируемые даты или бюджет), и учитывать их в последующих\nответах."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -180,
+        -80
+      ],
+      "id": "56f7540a-9059-420e-8e50-992bbbba42e5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "mistralai/mistral-small-3.1-24b-instruct:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        140
+      ],
+      "id": "6c282a56-ff19-43df-9b7e-5bcc03eae2e5",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "TlZXKEBMDCeBxO3i",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -100,
+        140
+      ],
+      "id": "38c11fce-0b5e-4502-8967-1e91451ec155",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "wCEZjxeKYYfABqM4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        -80
+      ],
+      "id": "0e981d5e-94d7-41ee-9c5e-50d4dc03e25f",
+      "name": "Telegram",
+      "webhookId": "cb885110-3ca3-4df1-8828-70d6fe300c78",
+      "credentials": {
+        "telegramApi": {
+          "id": "QWshdZI3pPtGqTmy",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e80767d6-3624-4c39-a122-5c9b9ff0a914",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c3a3ab13e71ad3b248083a1d18a452ce74d47839291f4784098439ea0588f3c0"
+  },
+  "id": "SkNgo6DJfGK0JfqE",
+  "tags": []
+}
